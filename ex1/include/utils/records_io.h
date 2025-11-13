@@ -12,7 +12,7 @@
  typedef struct record
 {
     uint64_t id;
-    _Float32 field1;
+    float field1;
     int64_t field2;
     char field3[16];
 } Record;
