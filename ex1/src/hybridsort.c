@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 static inline void swap_bytes(void *a, void *b, size_t size) {
     char tmp[size];
@@ -11,25 +12,52 @@ static inline void swap_bytes(void *a, void *b, size_t size) {
     memcpy(b, tmp, size);
 }
 
-static size_t partition(void* base,
+static void partition(void* base,
                 size_t p,
                 size_t r,
                 size_t size,
-                int (*compar)(const void *, const void *)){
+                int (*compar)(const void *, const void *),
+                size_t *low,
+                size_t *high){
     
     char* b = (char*)base;
-    char* k = b + (p + (size_t)rand() % (r - p + 1)) * size; //pivot
-    swap_bytes(k, b + r * size, size);
+    
+    size_t a1 = p;
+    size_t b1 = p + (r - p) / 2;
+    size_t c1 = r;
+    char* A = b + a1 * size;
+    char* B = b + b1 * size;
+    char* C = b + c1 * size;
 
-    size_t i = p; // i is the index of the first element > pivot or the one to be checked if none so far
-    for(size_t j = p; j < r; j++){
-        if(compar(b + j * size, b + r * size) <= 0){
-            swap_bytes(b + i * size, b + j * size, size);
+    if (compar(A, B) > 0) swap_bytes(A, B, size);
+    if (compar(B, C) > 0) swap_bytes(B, C, size);
+    if (compar(A, B) > 0) swap_bytes(A, B, size);
+    swap_bytes(b + b1 * size, b + r * size, size);
+
+    char pivot[size];
+    memcpy(pivot, b + r * size, size);
+
+    // [p..l-1] < pivot, [l..i-1] == pivot, [g+1..r] > pivot
+    size_t l = p;
+    size_t i = p;
+    size_t h = r;
+    
+    while(i<=h){
+        int res = compar(b + i * size, pivot);
+        if(res < 0){
+            swap_bytes(b + l * size, b + i * size, size);
+            l++;
             i++;
         }
+        else if(res > 0){
+            swap_bytes(b + i * size, b + h * size, size);
+            h--;
+        }
+        else{ i++; }
     }
-    swap_bytes(b + i * size, b + r * size, size);
-    return i;
+
+    *low = l;
+    *high = h;
 }
 
 static void hybridsort_rec(void *base,
@@ -41,15 +69,15 @@ static void hybridsort_rec(void *base,
     
     if(p>=r){ return; }
     
-    if(r-p+1 < k){
-        selection_sort((char*)base + p*size, r-p+1, size, compar);
+    if(r - p + 1 < k){
+        selection_sort((char*)base + p * size, r - p + 1, size, compar);
         return;
     }
 
-    size_t q = partition(base, p, r, size, compar);
-    if(q>p) { hybridsort_rec(base, p, q-1, size, k, compar); }
-    hybridsort_rec(base, q+1, r, size, k, compar);
-
+    size_t low, high;
+    partition(base, p, r, size, compar, &low, &high);
+    if(low > p) { hybridsort_rec(base, p, low - 1, size, k, compar); }
+    hybridsort_rec(base, high + 1, r, size, k, compar);
 }
 
 void hybridsort(void *base,
@@ -59,5 +87,6 @@ void hybridsort(void *base,
                 int (*compar)(const void *, const void *)){
     
     if(nitems == 0) { return; }
-    hybridsort_rec(base, 0, nitems-1, size, k, compar);
+    srand((unsigned int)time(NULL));
+    hybridsort_rec(base, 0, nitems - 1, size, k, compar);
 }
