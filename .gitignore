@@ -1,4 +1,4 @@
-docs/
 bin/
 build/
-obj/
+.vscode/
+*.bin
