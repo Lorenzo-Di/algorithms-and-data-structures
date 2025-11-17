@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 static inline void swap_bytes(void *a, void *b, size_t size) {
     char tmp[size];
@@ -22,6 +21,7 @@ static void partition(void* base,
     
     char* b = (char*)base;
     
+    //pivot is chosen as the median of first, middle, and last element
     size_t a1 = p;
     size_t b1 = p + (r - p) / 2;
     size_t c1 = r;
@@ -37,7 +37,7 @@ static void partition(void* base,
     char pivot[size];
     memcpy(pivot, b + r * size, size);
 
-    // [p..l-1] < pivot, [l..i-1] == pivot, [g+1..r] > pivot
+    // [p..l-1] < pivot, [l..i-1] == pivot, [h+1..r] > pivot
     size_t l = p;
     size_t i = p;
     size_t h = r;
@@ -87,6 +87,5 @@ void hybridsort(void *base,
                 int (*compar)(const void *, const void *)){
     
     if(nitems == 0) { return; }
-    srand((unsigned int)time(NULL));
     hybridsort_rec(base, 0, nitems - 1, size, k, compar);
 }

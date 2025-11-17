@@ -12,7 +12,7 @@ int write_record(FILE *file, const Record *record){
 }
 
 int load_records_from_file(FILE *file, Record **records, size_t *count){
-    fseek(file, 0, SEEK_END);
+    if(fseek(file, 0, SEEK_END) != 0) { return -1; }
     long size = ftell(file);
     if(size <= 0) { return -1; }
     *count = (size_t)size / sizeof(Record);
