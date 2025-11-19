@@ -4,8 +4,7 @@
 
 void selection_sort(void* array, size_t len, size_t size, int (*compar)(const void*, const void*)){
     if(len<=1){ return; }
-    void* tmp;
-    if(!(tmp = malloc(size))) { return; }
+    char tmp[size];
     size_t min;
     char* a = array;
 
@@ -23,5 +22,4 @@ void selection_sort(void* array, size_t len, size_t size, int (*compar)(const vo
             memcpy(a + size * i, tmp, size);
         }
     }
-    free(tmp);
 }
