@@ -7,7 +7,6 @@
  * @struct Record
  * @brief Represents a fixed-size data record (36 bytes total).
  */
-
  typedef struct record
 {
     uint64_t id;
