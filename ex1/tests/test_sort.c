@@ -3,15 +3,36 @@
  */
 
 #include "hybridsort.h"
+#include "compare_records.h"
 #include "unity.h"
 
 static int compar(const void* a_p, const void* b_p){
-    int* inta_p = (int*)a_p;
-    int* intb_p = (int*)b_p;
-    if(*inta_p < *intb_p) { return -1; }
-    else if (*inta_p > *intb_p) { return 1; }
-    return 0;
+    int inta = *(const int*)a_p;
+    int intb = *(const int*)b_p;
+    return (inta > intb) - (inta < intb);
 }
+
+static int compar_float(const void* a_p, const void* b_p){
+    float da = *(const float*)a_p;
+    float db = *(const float*)b_p;
+    return (da > db) - (da < db);
+}
+
+typedef struct {
+    int key;
+    char str[3];
+} Item;
+
+static int compar_item(const void* a, const void* b) {
+    int ka = ((const Item*)a)->key;
+    int kb = ((const Item*)b)->key;
+    return (ka > kb) - (ka < kb);
+}
+
+static int compar_string(const void *a, const void *b) {
+    return strcmp((const char*)a, (const char*)b);
+}
+
 
 static size_t size = sizeof(int);
 
@@ -116,4 +137,36 @@ void test_hybridsort_reversed_ordered_array(void){
     int expected[10] = {-9, -2, 0, 0, 1, 2, 3, 7, 8, 12};
     hybridsort(array, 10, size, 5, compar);
     TEST_ASSERT_EQUAL_INT32_ARRAY(expected, array, 10);
+}
+
+void test_hybridsort_float_array(void){
+    float array[5] = {2.1f, 1.3f, 5.43f, -2.0f, 7.746f};
+    float expected[5] = {-2.0f, 1.3f, 2.1f, 5.43f, 7.746f};
+    hybridsort(array, 5, sizeof(float), 3, compar_float);
+    TEST_ASSERT_EQUAL_FLOAT_ARRAY(expected, array, 5);
+    (void)expected; //needed to avoid compiler warnings
+}
+
+void test_hybridsort_struct_array(void){
+    Item array[5] = {{3, {0}}, {1, {0}}, {4, {0}}, {2, {0}}, {1, {0}}};
+    Item expected[5] = {{1, {0}}, {1, {0}}, {2, {0}}, {3, {0}}, {4, {0}}};
+    hybridsort(array, 5, sizeof(Item), 2, compar_item);
+    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, array, sizeof(Item), 5);
+}
+
+void test_hybridsort_string(void) {
+    char array[][16] = {
+        "these",
+        "are",
+        "four",
+        "strings"
+    };
+    char expected[][16] = {
+        "are",
+        "four",
+        "strings",
+        "these"
+    };
+    hybridsort(array, 4, sizeof(array[0]), 3, compar_string);
+    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, array, 4, sizeof(array[0]));
 }

@@ -44,6 +44,9 @@ void test_hybridsort_array_with_repeated_elements(void);
 void test_hybridsort_array_with_same_element(void);
 void test_hybridsort_reversed_ordered_array(void);
 
+void test_hybridsort_float_array(void);
+void test_hybridsort_struct_array(void);
+void test_hybridsort_string(void);
 
 int main(void) {
     UNITY_BEGIN();
@@ -91,6 +94,10 @@ int main(void) {
     RUN_TEST(test_hybridsort_array_with_repeated_elements);
     RUN_TEST(test_hybridsort_array_with_same_element);
     RUN_TEST(test_hybridsort_reversed_ordered_array);
+
+    RUN_TEST(test_hybridsort_float_array);
+    RUN_TEST(test_hybridsort_struct_array);
+    RUN_TEST(test_hybridsort_string);
     
     return UNITY_END();
 }
