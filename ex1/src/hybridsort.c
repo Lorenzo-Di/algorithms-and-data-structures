@@ -66,7 +66,7 @@ static void hybridsort_rec(void *base,
                 size_t size,
                 size_t k,
                 int (*compar)(const void *, const void *)){
-    
+
     if(p>=r){ return; }
     
     if(r - p + 1 < k){
@@ -77,7 +77,7 @@ static void hybridsort_rec(void *base,
     size_t low, high;
     partition(base, p, r, size, compar, &low, &high);
     if(low > p) { hybridsort_rec(base, p, low - 1, size, k, compar); }
-    hybridsort_rec(base, high + 1, r, size, k, compar);
+    if(high < r) { hybridsort_rec(base, high + 1, r, size, k, compar); }
 }
 
 void hybridsort(void *base,

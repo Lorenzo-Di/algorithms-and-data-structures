@@ -26,12 +26,14 @@ void sort_records(FILE *infile, FILE *outfile, size_t field, size_t k){
     }
 
     save_records_to_file(outfile, records, count);
+    free(records);
+    records = NULL;
 }
 
 int main(int argc, char* argv[]){
     if(argc!=5){
         printf("Usage: $ ./bin/main_ex1 <input_file> <output_file> <field> <k>");
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     FILE *infile = fopen(argv[1], "rb");
@@ -48,6 +50,9 @@ int main(int argc, char* argv[]){
     size_t k = (size_t)(tmp);
 
     sort_records(infile, outfile, field, k);
+
+    fclose(infile);
+    fclose(outfile);
 
     return EXIT_SUCCESS;
 }
