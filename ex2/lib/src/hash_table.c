@@ -149,3 +149,38 @@ int hash_table_contains_key(const HashTable *table, const char *key)
 
     return 0;
 }
+
+void hash_table_remove(HashTable *table, const void *key)
+{
+    if (!table || !key) {
+        return;
+    }
+
+    unsigned long h = table->hash(key);
+    size_t index = h % table->capacity;
+
+    HashNode *node = table->buckets[index];
+    HashNode *prev = NULL;
+
+    while (node) {
+        if (table->compare(key, node->key) == 0) {
+            /* unlink */
+            if (prev) {
+                prev->next = node->next;
+            } else {
+                table->buckets[index] = node->next;
+            }
+
+            /* free node */
+            free(node->key);
+            free(node->value);
+            free(node);
+
+            table->size--;
+            return;
+        }
+
+        prev = node;
+        node = node->next;
+    }
+}
