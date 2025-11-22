@@ -109,3 +109,43 @@ static int hash_table_resize(HashTable *table) {
     table->capacity = new_capacity;
     return 1;
 }
+
+void* hash_table_get(const HashTable* table, const void* key) {
+    if (table == NULL || key == NULL) {
+        return NULL;
+    }
+
+    unsigned long hash = table->hash(key);
+    size_t index = hash % table->capacity;
+
+    HashNode* node = table->buckets[index];
+
+    while (node != NULL) {
+        if (table->compare(node->key, key) == 0) {
+            return node->value;
+        }
+        node = node->next;
+    }
+
+    return NULL;
+}
+
+int hash_table_contains_key(const HashTable *table, const char *key)
+{
+    if (!table || !key) {
+        return 0;
+    }
+
+    unsigned long hash = table->hash(key);
+    size_t index = hash % table->capacity;
+    HashNode *node = table->buckets[index];
+
+    while (node) {
+        if (strcmp(node->key, key) == 0) {
+            return 1;
+        }
+        node = node->next;
+    }
+
+    return 0;
+}
