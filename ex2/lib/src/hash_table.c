@@ -184,3 +184,11 @@ void hash_table_remove(HashTable *table, const void *key)
         node = node->next;
     }
 }
+
+int hash_table_size(const HashTable *table)
+{
+    if (!table) {
+        return 0;
+    }
+    return (int)table->size;
+}
