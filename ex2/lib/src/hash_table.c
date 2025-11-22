@@ -192,3 +192,27 @@ int hash_table_size(const HashTable *table)
     }
     return (int)table->size;
 }
+
+void** hash_table_keyset(const HashTable *table)
+{
+    if (!table || table->size == 0) {
+        return NULL;
+    }
+
+    void **keys = malloc(table->size * sizeof(void*));
+    if (!keys) {
+        return NULL;
+    }
+
+    size_t pos = 0;
+
+    for (size_t i = 0; i < table->capacity; i++) {
+        HashNode *node = table->buckets[i];
+        while (node) {
+            keys[pos++] = node->key;
+            node = node->next;
+        }
+    }
+
+    return keys;
+}
