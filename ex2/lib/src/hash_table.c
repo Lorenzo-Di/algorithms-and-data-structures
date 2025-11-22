@@ -1,11 +1,12 @@
 #include "hash_table.h"
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 /* Internal node for chaining */
 typedef struct HashNode {
-    const void *key;
-    const void *value;
+    void *key;
+    void *value;
     struct HashNode *next;
 } HashNode;
 
@@ -60,7 +61,7 @@ void hash_table_put(HashTable* table, const void* key, const void* value) {
     /* Check if key already exists: overwrite */
     while (node) {
         if (table->compare(node->key, key) == 0) {
-            node->value = value;
+            node->value = (void*)value;
             return;
         }
         node = node->next;
@@ -72,8 +73,8 @@ void hash_table_put(HashTable* table, const void* key, const void* value) {
         return; /* Allocation failure: leave table unchanged */
     }
 
-    new_node->key = key;
-    new_node->value = value;
+    new_node->key = (void*)key;
+    new_node->value = (void*)value;
     new_node->next = table->buckets[index];
     table->buckets[index] = new_node;
 
@@ -130,7 +131,7 @@ void* hash_table_get(const HashTable* table, const void* key) {
     return NULL;
 }
 
-int hash_table_contains_key(const HashTable *table, const char *key)
+int hash_table_contains_key(const HashTable *table, const void *key)
 {
     if (!table || !key) {
         return 0;
@@ -141,7 +142,7 @@ int hash_table_contains_key(const HashTable *table, const char *key)
     HashNode *node = table->buckets[index];
 
     while (node) {
-        if (strcmp(node->key, key) == 0) {
+        if (table->compare(node->key, key) == 0) {
             return 1;
         }
         node = node->next;
@@ -163,7 +164,7 @@ void hash_table_remove(HashTable *table, const void *key)
     HashNode *prev = NULL;
 
     while (node) {
-        if (table->compare(key, node->key) == 0) {
+        if (table->compare(node->key, key) == 0) {
             /* unlink */
             if (prev) {
                 prev->next = node->next;
@@ -172,8 +173,6 @@ void hash_table_remove(HashTable *table, const void *key)
             }
 
             /* free node */
-            free(node->key);
-            free(node->value);
             free(node);
 
             table->size--;
@@ -188,20 +187,29 @@ void hash_table_remove(HashTable *table, const void *key)
 int hash_table_size(const HashTable *table)
 {
     if (!table) {
-        return 0;
+        return -1;
     }
+
+    if (table->size > INT_MAX) {
+        return -1;
+    }
+
     return (int)table->size;
 }
 
 void** hash_table_keyset(const HashTable *table)
 {
-    if (!table || table->size == 0) {
+    if (!table) {
         return NULL;
     }
 
     void **keys = malloc(table->size * sizeof(void*));
     if (!keys) {
         return NULL;
+    }
+
+    if(table->size == 0){
+        return keys;
     }
 
     size_t pos = 0;
@@ -227,11 +235,7 @@ void hash_table_free(HashTable *table)
         HashNode *node = table->buckets[i];
         while (node) {
             HashNode *next = node->next;
-
-            free(node->key);
-            free(node->value);
             free(node);
-
             node = next;
         }
     }

@@ -76,7 +76,8 @@ void hash_table_remove(HashTable* table, const void* key);
  * @brief Get the number of entries currently stored.
  *
  * @param table The hash table.
- * @return Number of stored key‑value pairs.
+ * @return Number of stored key‑value pairs. -1 if the table is NULL
+ *         or if the size exceeds INT_MAX.
  */
 int hash_table_size(const HashTable* table);
 
@@ -88,7 +89,9 @@ int hash_table_size(const HashTable* table);
  * array, not the keys.
  *
  * @param table The hash table.
- * @return A newly allocated array of key pointers, or NULL if empty.
+ * @return A newly allocated array of key pointers. The array length equals the current table size.
+ *         If the table is empty, the function returns a valid malloc(0) pointer (which must still be freed).
+ *         Returns NULL if a memory allocation error occurs.
  */
 void** hash_table_keyset(const HashTable* table);
 
