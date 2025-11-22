@@ -216,3 +216,26 @@ void** hash_table_keyset(const HashTable *table)
 
     return keys;
 }
+
+void hash_table_free(HashTable *table)
+{
+    if (!table) {
+        return;
+    }
+
+    for (size_t i = 0; i < table->capacity; i++) {
+        HashNode *node = table->buckets[i];
+        while (node) {
+            HashNode *next = node->next;
+
+            free(node->key);
+            free(node->value);
+            free(node);
+
+            node = next;
+        }
+    }
+
+    free(table->buckets);
+    free(table);
+}
