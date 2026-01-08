@@ -2,139 +2,252 @@
 #include "hash_table.h"
 #include <stdlib.h>
 
-static int cmp_int(const void* a, const void* b) {
-    int x = *(const int*)a;
-    int y = *(const int*)b;
-    return (x > y) - (x < y);
+/* --- SETUP & HELPERS --- */
+
+static HashTable* table;
+
+/* Comparison function for integers */
+static int compare_ints(const void* a, const void* b) {
+    int ia = *(const int*)a;
+    int ib = *(const int*)b;
+    return ia - ib;
 }
 
-static unsigned long hash_int(const void* a) {
-    return (unsigned long)(*(const int*)a);
+/* Identity hash function for integers (predictable for bucket testing) */
+static unsigned long hash_int(const void* k) {
+    return (unsigned long)(*(const int*)k);
 }
 
-/* Helpers */
-static int* make_int(int v) {
-    int* p = malloc(sizeof(int));
-    *p = v;
-    return p;
+/* Runs BEFORE every test */
+void setUp(void) {
+    table = hash_table_create(compare_ints, hash_int);
 }
 
-/* =====================
-   TESTS
-   ===================== */
-
-void test_create_not_null(void) {
-    HashTable* t = hash_table_create(cmp_int, hash_int);
-    TEST_ASSERT_NOT_NULL(t);
-    hash_table_free(t);
+/* Runs AFTER every test */
+void tearDown(void) {
+    hash_table_free(table);
 }
 
-void test_put_then_get_single(void) {
-    HashTable* t = hash_table_create(cmp_int, hash_int);
-    int* k = make_int(5);
-    int* v = make_int(99);
+/* --- STANDARD TEST CASES --- */
 
-    hash_table_put(t, k, v);
-    void* out = hash_table_get(t, k);
-
-    TEST_ASSERT_EQUAL_PTR(v, out);
-    hash_table_free(t);
+void test_create_table(void) {
+    TEST_ASSERT_NOT_NULL(table);
+    TEST_ASSERT_EQUAL_INT(0, hash_table_size(table));
 }
 
-void test_get_nonexistent_returns_null(void) {
-    HashTable* t = hash_table_create(cmp_int, hash_int);
-    int* k = make_int(42);
+void test_put_get_simple(void) {
+    int key = 42;
+    int value = 100;
 
-    TEST_ASSERT_NULL(hash_table_get(t, k));
-    free(k);
-    hash_table_free(t);
+    hash_table_put(table, &key, &value);
+    
+    TEST_ASSERT_EQUAL_INT(1, hash_table_size(table));
+    TEST_ASSERT_TRUE(hash_table_contains_key(table, &key));
+    
+    int* retrieved = (int*)hash_table_get(table, &key);
+    TEST_ASSERT_NOT_NULL(retrieved);
+    TEST_ASSERT_EQUAL_INT(100, *retrieved);
 }
 
-void test_overwrite_value(void) {
-    HashTable* t = hash_table_create(cmp_int, hash_int);
-    int* k = make_int(10);
-    int* v1 = make_int(1);
-    int* v2 = make_int(2);
+void test_put_overwrite_value(void) {
+    int key = 10;
+    int val1 = 500;
+    int val2 = 600;
 
-    hash_table_put(t, k, v1);
-    hash_table_put(t, k, v2);
+    hash_table_put(table, &key, &val1);
+    hash_table_put(table, &key, &val2); /* Overwrite */
 
-    TEST_ASSERT_EQUAL_PTR(v2, hash_table_get(t, k));
-    hash_table_free(t);
+    TEST_ASSERT_EQUAL_INT(1, hash_table_size(table));
+    
+    int* retrieved = (int*)hash_table_get(table, &key);
+    TEST_ASSERT_EQUAL_INT(600, *retrieved);
 }
 
-void test_contains_key_found(void) {
-    HashTable* t = hash_table_create(cmp_int, hash_int);
-    int* k = make_int(3);
-    hash_table_put(t, k, make_int(7));
+void test_remove_existing(void) {
+    int key = 5;
+    int val = 5;
 
-    TEST_ASSERT_TRUE(hash_table_contains_key(t, k));
-    hash_table_free(t);
+    hash_table_put(table, &key, &val);
+    hash_table_remove(table, &key);
+
+    TEST_ASSERT_EQUAL_INT(0, hash_table_size(table));
+    TEST_ASSERT_FALSE(hash_table_contains_key(table, &key));
+    TEST_ASSERT_NULL(hash_table_get(table, &key));
 }
 
-void test_contains_key_not_found(void) {
-    HashTable* t = hash_table_create(cmp_int, hash_int);
-    int* k = make_int(500);
-
-    TEST_ASSERT_FALSE(hash_table_contains_key(t, k));
-    free(k);
-    hash_table_free(t);
+void test_remove_non_existing(void) {
+    int key = 99;
+    /* Removing a non-existent key should not crash */
+    hash_table_remove(table, &key); 
+    TEST_ASSERT_EQUAL_INT(0, hash_table_size(table));
 }
 
-void test_remove_key(void) {
-    HashTable* t = hash_table_create(cmp_int, hash_int);
-    int* k = make_int(8);
-    int* v = make_int(123);
-    hash_table_put(t, k, v);
+void test_collision_handling(void) {
+    /* With initial capacity 1024 and identity hash:
+     * 1 % 1024 = 1
+     * 1025 % 1024 = 1
+     * Keys 1 and 1025 map to the same bucket.
+     */
+    int k1 = 1, v1 = 10;
+    int k2 = 1025, v2 = 20;
 
-    hash_table_remove(t, k);
+    hash_table_put(table, &k1, &v1);
+    hash_table_put(table, &k2, &v2);
 
-    TEST_ASSERT_FALSE(hash_table_contains_key(t, k));
-    hash_table_free(t);
+    TEST_ASSERT_EQUAL_INT(2, hash_table_size(table));
+    TEST_ASSERT_EQUAL_INT(10, *(int*)hash_table_get(table, &k1));
+    TEST_ASSERT_EQUAL_INT(20, *(int*)hash_table_get(table, &k2));
 }
 
-void test_size(void) {
-    HashTable* t = hash_table_create(cmp_int, hash_int);
-    TEST_ASSERT_EQUAL_INT(0, hash_table_size(t));
+void test_resize_trigger(void) {
+    /* Initial capacity = 1024. Load factor 0.75 -> threshold 768.
+     * Insert 800 elements to force resize.
+     */
+    int keys[800];
+    int values[800];
 
-    hash_table_put(t, make_int(1), make_int(10));
-    hash_table_put(t, make_int(2), make_int(20));
+    for (int i = 0; i < 800; i++) {
+        keys[i] = i;
+        values[i] = i * 2;
+        hash_table_put(table, &keys[i], &values[i]);
+    }
 
-    TEST_ASSERT_EQUAL_INT(2, hash_table_size(t));
-    hash_table_free(t);
+    TEST_ASSERT_EQUAL_INT(800, hash_table_size(table));
+
+    /* Verify data integrity after resize */
+    for (int i = 0; i < 800; i++) {
+        int* res = (int*)hash_table_get(table, &keys[i]);
+        TEST_ASSERT_NOT_NULL(res);
+        TEST_ASSERT_EQUAL_INT(i * 2, *res);
+    }
+}
+
+void test_keyset(void) {
+    int k1 = 10, v1 = 1;
+    int k2 = 20, v2 = 2;
+    int k3 = 30, v3 = 3;
+
+    hash_table_put(table, &k1, &v1);
+    hash_table_put(table, &k2, &v2);
+    hash_table_put(table, &k3, &v3);
+
+    void** keys = hash_table_keyset(table);
+    TEST_ASSERT_NOT_NULL(keys);
+
+    /* Verify keys presence (order not guaranteed) */
+    int count = 0;
+    for (int i = 0; i < 3; i++) {
+        int val = *(int*)keys[i];
+        if (val == 10 || val == 20 || val == 30) count++;
+    }
+    TEST_ASSERT_EQUAL_INT(3, count);
+
+    free(keys); /* User must free the array */
 }
 
 void test_keyset_empty(void) {
-    HashTable* t = hash_table_create(cmp_int, hash_int);
-
-    void** ks = hash_table_keyset(t);
-    TEST_ASSERT_NOT_NULL(ks);   /* should be 1 element array */
-    free(ks);
-
-    hash_table_free(t);
+    void** keys = hash_table_keyset(table);
+    TEST_ASSERT_NOT_NULL(keys); /* Should return valid pointer (malloc(0)) */
+    free(keys);
 }
 
-void test_keyset_contents(void) {
-    HashTable* t = hash_table_create(cmp_int, hash_int);
-    int* k1 = make_int(1);
-    int* k2 = make_int(2);
-    int* k3 = make_int(3);
+/* --- ADVANCED / ROBUSTNESS TEST CASES --- */
 
-    hash_table_put(t, k1, make_int(10));
-    hash_table_put(t, k2, make_int(20));
-    hash_table_put(t, k3, make_int(30));
+void test_null_safety(void) {
+    int key = 1;
+    int val = 1;
 
-    void** ks = hash_table_keyset(t);
-    TEST_ASSERT_NOT_NULL(ks);
+    /* Should not crash if NULL is passed */
+    hash_table_put(NULL, &key, &val);
+    hash_table_put(table, NULL, &val);
+    
+    TEST_ASSERT_NULL(hash_table_get(NULL, &key));
+    TEST_ASSERT_NULL(hash_table_get(table, NULL));
+    
+    TEST_ASSERT_FALSE(hash_table_contains_key(NULL, &key));
+    TEST_ASSERT_FALSE(hash_table_contains_key(table, NULL));
+    
+    hash_table_remove(NULL, &key);
+    hash_table_remove(table, NULL);
+    
+    TEST_ASSERT_EQUAL_INT(-1, hash_table_size(NULL));
+    TEST_ASSERT_NULL(hash_table_keyset(NULL));
+}
 
-    /* We only test counts, not order */
-    int count = 0;
-    for (int i = 0; i < 3; i++) {
-        if (ks[i] == k1 || ks[i] == k2 || ks[i] == k3)
-            count++;
+void test_interleaved_operations(void) {
+    int k1=1, v1=10;
+    int k2=2, v2=20;
+    int k3=3, v3=30;
+
+    /* Add 3 elements */
+    hash_table_put(table, &k1, &v1);
+    hash_table_put(table, &k2, &v2);
+    hash_table_put(table, &k3, &v3);
+    TEST_ASSERT_EQUAL_INT(3, hash_table_size(table));
+
+    /* Remove the middle one */
+    hash_table_remove(table, &k2);
+    TEST_ASSERT_EQUAL_INT(2, hash_table_size(table));
+    TEST_ASSERT_FALSE(hash_table_contains_key(table, &k2));
+    TEST_ASSERT_TRUE(hash_table_contains_key(table, &k3)); /* k3 must still exist */
+
+    /* Re-add the removed one */
+    hash_table_put(table, &k2, &v2);
+    TEST_ASSERT_EQUAL_INT(3, hash_table_size(table));
+    TEST_ASSERT_TRUE(hash_table_contains_key(table, &k2));
+}
+
+void test_heavy_load_resize(void) {
+    /* Initial capacity 1024. 
+     * Target: exceed 2048 elements to force at least two resizes.
+     */
+    const int LIMIT = 2500;
+    int *keys = malloc(sizeof(int) * (size_t)LIMIT);
+    int *values = malloc(sizeof(int) * (size_t)LIMIT);
+
+    if (!keys || !values) {
+        free(keys);
+        free(values);
+        TEST_FAIL_MESSAGE("Memory allocation failed in test");
     }
 
-    TEST_ASSERT_EQUAL_INT(3, count);
-    free(ks);
-    hash_table_free(t);
+    for(int i=0; i<LIMIT; i++) {
+        keys[i] = i;
+        values[i] = i;
+        hash_table_put(table, &keys[i], &values[i]);
+    }
+
+    TEST_ASSERT_EQUAL_INT(LIMIT, hash_table_size(table));
+
+    /* Spot check */
+    int check_idx = 2000;
+    int *val = (int*)hash_table_get(table, &keys[check_idx]);
+    TEST_ASSERT_NOT_NULL(val);
+    TEST_ASSERT_EQUAL_INT(2000, *val);
+
+    free(keys);
+    free(values);
+}
+
+/* --- MAIN --- */
+int main(void) {
+    UNITY_BEGIN();
+    
+    /* Basic Tests */
+    RUN_TEST(test_create_table);
+    RUN_TEST(test_put_get_simple);
+    RUN_TEST(test_put_overwrite_value);
+    RUN_TEST(test_remove_existing);
+    RUN_TEST(test_remove_non_existing);
+    RUN_TEST(test_collision_handling);
+    RUN_TEST(test_resize_trigger);
+    RUN_TEST(test_keyset);
+    RUN_TEST(test_keyset_empty);
+    
+    /* Robustness Tests */
+    RUN_TEST(test_null_safety);
+    RUN_TEST(test_interleaved_operations);
+    RUN_TEST(test_heavy_load_resize);
+
+    return UNITY_END();
 }
