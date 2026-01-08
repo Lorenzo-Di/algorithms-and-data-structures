@@ -20,22 +20,9 @@ static void partition(void* base,
                 size_t *high){
     
     char* b = (char*)base;
-    
-    //pivot is chosen as the median of first, middle, and last element
-    size_t a1 = p;
-    size_t b1 = p + (r - p) / 2;
-    size_t c1 = r;
-    char* A = b + a1 * size;
-    char* B = b + b1 * size;
-    char* C = b + c1 * size;
-
-    if (compar(A, B) > 0) swap_bytes(A, B, size);
-    if (compar(B, C) > 0) swap_bytes(B, C, size);
-    if (compar(A, B) > 0) swap_bytes(A, B, size);
-    swap_bytes(b + b1 * size, b + r * size, size);
-
     char pivot[size];
-    memcpy(pivot, b + r * size, size);
+    void *C = (char*)b + (p + rand() % (r - p + 1)) * size;
+    memcpy(pivot, C, size);
 
     // [p..l-1] < pivot, [l..i-1] == pivot, [h+1..r] > pivot
     size_t l = p;

@@ -5,7 +5,7 @@
 
 /**
  * @struct Record
- * @brief Represents a fixed-size data record (36 bytes total).
+ * @brief Represents a fixed-size data record.
  */
  typedef struct record
 {
