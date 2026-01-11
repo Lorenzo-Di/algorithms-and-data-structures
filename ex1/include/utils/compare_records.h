@@ -3,6 +3,11 @@
 #include "record.h"
 #include <string.h>
 
+/**
+ * @file compare_records_h
+ * @brief Functions for comparing the Record struct
+ */
+
 static inline int compare_record_id(const void *a, const void *b){
     const Record *ra = a;
     const Record *rb = b;

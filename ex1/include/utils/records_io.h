@@ -4,6 +4,11 @@
 #include <stdio.h>
 
 /**
+ * @file records_io.h
+ * @brief Manages I/O of Record struct with files
+ */
+
+/**
  * @brief Read a Record from a file.
  * @param file The open file descriptor in read mode.
  * @param record Output parameter. Must point to a valid record. On success the functions loads the data here.

@@ -4,6 +4,11 @@
 #include <stdint.h>
 
 /**
+ * @file record.h
+ * @brief Record struct definition
+ */
+
+/**
  * @struct Record
  * @brief Represents a fixed-size data record.
  */

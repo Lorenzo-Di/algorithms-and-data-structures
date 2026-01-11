@@ -3,6 +3,11 @@
 #include <stddef.h>
 
 /**
+ * @file selection_sort.h
+ * @brief Standard selection sort function.
+ */
+
+/**
  * @brief Classic Selection Sort
  * @param array The array to be sorted
  * @param len Length of the array
