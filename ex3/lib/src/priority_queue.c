@@ -12,6 +12,15 @@ struct priorityQueue {
     int (*compar)(const void*, const void*);
 };
 
+static void heapify(PriorityQueue *pq, size_t i) {
+    size_t max = max_of_four(pq, i, left_child(i), middle_child(i), right_child(i));
+    if(max == i) { return; }
+
+    swap_elements(pq, i, max);
+
+    heapify(pq, max);
+}
+
 PriorityQueue* priority_queue_create(int (*compar)(const void*,const void*), unsigned long (*hash_func)(const void*)) {
     if(!(compar && hash_func)) { return NULL; }
     PriorityQueue *pq = malloc(sizeof(PriorityQueue));
@@ -61,4 +70,22 @@ int priority_queue_contains(const PriorityQueue *pq, const void *element) {
 void* priority_queue_top(const PriorityQueue *pq) {
     if(!(pq && pq->size)) { return NULL; }
     return pq->heap[0];
+}
+
+void priority_queue_pop(PriorityQueue *pq) {
+    if(!(pq && pq->size)) { return; }
+    size_t *value = hash_table_get(pq->table, pq->heap[0]);
+    if(!value) { return; }
+    hash_table_remove(pq->table, pq->heap[0]);
+    free(value);
+    if(pq->size > 1) {
+        pq->heap[0] = pq->heap[pq->size-1];
+        value = hash_table_get(pq->table, pq->heap[0]);
+        if(value) { *value = 0; }
+    }
+    pq->size--;
+
+    resize_pq_down(pq);
+
+    heapify(pq, 0);
 }
