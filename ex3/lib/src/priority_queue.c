@@ -51,3 +51,14 @@ int priority_queue_push(PriorityQueue *pq, void *element) {
     move_up(pq, *index);
     return 1;
 }
+
+int priority_queue_contains(const PriorityQueue *pq, const void *element) {
+    if(!(pq && element)) { return -1; }
+    if(hash_table_get(pq->table, element)) { return 1; }
+    return 0;
+}
+
+void* priority_queue_top(const PriorityQueue *pq) {
+    if(!(pq && pq->size)) { return NULL; }
+    return pq->heap[0];
+}
