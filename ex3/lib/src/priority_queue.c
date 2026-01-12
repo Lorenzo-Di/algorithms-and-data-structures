@@ -145,3 +145,26 @@ void priority_queue_pop(PriorityQueue *pq) {
 
     heapify(pq, 0);
 }
+
+int priority_queue_remove(PriorityQueue *pq, const void *element) {
+    if(!(pq && element)) { return -1; }
+    size_t *index_to_remove = hash_table_get(pq->table, element);
+    if(!index_to_remove) { return 0; }
+    hash_table_remove(pq->table, element);
+
+    if(*index_to_remove != pq->size-1) {
+        pq->heap[*index_to_remove] = pq->heap[pq->size-1]; //put the last element in place of the removed one
+        size_t *value = hash_table_get(pq->table, pq->heap[*index_to_remove]);
+        *value = *index_to_remove;
+
+        heapify(pq, *value); //check if it should go down
+        move_up(pq, *value); //check if it should go up
+    }
+
+    free(index_to_remove);
+    pq->size--;
+
+    resize_pq_down(pq);
+
+    return 1;
+}
