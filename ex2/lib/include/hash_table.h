@@ -82,6 +82,14 @@ void hash_table_remove(HashTable* table, const void* key);
 int hash_table_size(const HashTable* table);
 
 /**
+ * @brief Get the number of entries currently stored.
+ * 
+ * @param table The hash table.
+ * @return Number of stored key-value pairs. 0 if the table is NULL.
+ */
+size_t hash_table_size_size_t(const HashTable *table);
+
+/**
  * @brief Retrieve an array of all keys.
  *
  * Keys are not duplicated: the returned array contains the same pointers

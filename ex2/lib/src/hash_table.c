@@ -197,6 +197,11 @@ int hash_table_size(const HashTable *table)
     return (int)table->size;
 }
 
+size_t hash_table_size_size_t(const HashTable *table) {
+    if(!table) { return 0; }
+    return table->size;
+}
+
 void** hash_table_keyset(const HashTable *table)
 {
     if (!table) {
