@@ -89,6 +89,15 @@ int priority_queue_remove(PriorityQueue *pq, const void *element);
 int priority_queue_size(const PriorityQueue *pq);
 
 /**
+ * @brief Get the number of entries currently stored.
+ * 
+ * @param pq The Queue.
+ * 
+ * @return Number of stored elements. 0 if the queue is invalid.
+ */
+size_t priority_queue_size_size_t(const PriorityQueue *pq);
+
+/**
  * @brief Free the priority queue structure.
  *
  * This frees the queue and the supporting hash table but does **not** free the elements.

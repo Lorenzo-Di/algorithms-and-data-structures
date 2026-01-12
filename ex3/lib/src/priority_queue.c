@@ -2,6 +2,7 @@
 
 #include "priority_queue.h"
 #include "hash_table.h"
+#include <limits.h>
 #include <stdlib.h>
 
 struct priorityQueue {
@@ -167,4 +168,33 @@ int priority_queue_remove(PriorityQueue *pq, const void *element) {
     resize_pq_down(pq);
 
     return 1;
+}
+
+int priority_queue_size(const PriorityQueue *pq) {
+    if(!(pq && pq->size <= INT_MAX)) { return -1; }
+    return pq->size;
+}
+
+size_t priority_queue_size_size_t(const PriorityQueue *pq) {
+    if(!(pq)) { return 0; }
+    return pq->size;
+}
+
+void priority_queue_free(PriorityQueue *pq){
+    if(!pq) { return; }
+
+    size_t table_size = hash_table_size_size_t(pq->table);
+
+    void **keyset = hash_table_keyset(pq->table);
+    if(!keyset) { return; }
+
+    for(size_t i = 0; i < table_size; i++) {
+        size_t *value = hash_table_get(pq->table, keyset[i]);
+        if(value) { free(value); }
+    }
+
+    free(keyset);
+    hash_table_free(pq->table);
+    free(pq->heap);
+    free(pq);
 }
