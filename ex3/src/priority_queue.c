@@ -100,7 +100,7 @@ PriorityQueue* priority_queue_create(int (*compar)(const void*,const void*), uns
 
 int priority_queue_push(PriorityQueue *pq, void *element) {
     if(!(pq && element)) { return -1; }
-    if(priority_queue_contains(pq, element) == 1) { return 0;}
+    if(priority_queue_contains(pq, element) == 1) { return 0; }
     if(pq->size == pq->capacity) {
         void **new_heap;
         if(!(new_heap = realloc(pq->heap, pq->capacity * 2 *sizeof(void *)))) { return 0; }

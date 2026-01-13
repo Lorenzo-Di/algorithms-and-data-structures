@@ -61,8 +61,8 @@ void simulation(InputTask *input_tasks, OutputTask **output_tasks, size_t count)
 
     while(completed_tasks < count) {
         while(current_index < count && current_time >= (size_t)input_tasks[current_index].Start) {
-            if(priority_queue_push(pq, &input_tasks[current_index]) == 1) { current_index++; }
-            else { count--; }
+            if(priority_queue_push(pq, &input_tasks[current_index]) != 1) { completed_tasks++; }
+            current_index++;
         }
         if((current_task = priority_queue_top(pq))) {
             priority_queue_pop(pq);

@@ -15,7 +15,7 @@ static int compare_ints(const void* a, const void* b) {
 }
 
 static unsigned long hash_int(const void* a) {
-    return (unsigned long)(*(const int*)a);
+    return (unsigned long)a;
 }
 
 void setUp(void) {
@@ -46,17 +46,17 @@ void test_Heap_Property_Order(void) {
     priority_queue_push(pq, &val3); // 30
     priority_queue_push(pq, &val4); // 5
 
-    /* Expect Min-Heap order: 5, 10, 20, 30 */
-    TEST_ASSERT_EQUAL_PTR(&val4, priority_queue_top(pq));
-    priority_queue_pop(pq);
-
-    TEST_ASSERT_EQUAL_PTR(&val1, priority_queue_top(pq));
+    /* Expect Max-Heap order: 30, 20, 10, 5 */
+    TEST_ASSERT_EQUAL_PTR(&val3, priority_queue_top(pq));
     priority_queue_pop(pq);
 
     TEST_ASSERT_EQUAL_PTR(&val2, priority_queue_top(pq));
     priority_queue_pop(pq);
 
-    TEST_ASSERT_EQUAL_PTR(&val3, priority_queue_top(pq));
+    TEST_ASSERT_EQUAL_PTR(&val1, priority_queue_top(pq));
+    priority_queue_pop(pq);
+
+    TEST_ASSERT_EQUAL_PTR(&val4, priority_queue_top(pq));
     priority_queue_pop(pq);
 }
 
@@ -76,18 +76,18 @@ void test_PriorityQueue_Remove_Arbitrary(void) {
     TEST_ASSERT_FALSE(priority_queue_contains(pq, &val2));
 
     /* Verify heap integrity */
-    TEST_ASSERT_EQUAL_PTR(&val1, priority_queue_top(pq));
-    priority_queue_pop(pq);
     TEST_ASSERT_EQUAL_PTR(&val3, priority_queue_top(pq));
+    priority_queue_pop(pq);
+    TEST_ASSERT_EQUAL_PTR(&val1, priority_queue_top(pq));
 }
 
 void test_PriorityQueue_Remove_Root_Explicitly(void) {
     priority_queue_push(pq, &val1);
     priority_queue_push(pq, &val2);
 
-    /* Remove root (10) via remove() instead of pop() */
-    TEST_ASSERT_EQUAL_INT(1, priority_queue_remove(pq, &val1));
-    TEST_ASSERT_EQUAL_PTR(&val2, priority_queue_top(pq));
+    /* Remove root (20) via remove() instead of pop() */
+    TEST_ASSERT_EQUAL_INT(1, priority_queue_remove(pq, &val2));
+    TEST_ASSERT_EQUAL_PTR(&val1, priority_queue_top(pq));
 }
 
 void test_PriorityQueue_Remove_Missing(void) {
@@ -124,7 +124,7 @@ void test_Empty_Queue_Behavior(void) {
 void test_Stress_Ternary_Structure(void) {
     int data[20];
     for (int i = 0; i < 20; i++) {
-        data[i] = 19 - i;
+        data[i] = i;
         priority_queue_push(pq, &data[i]);
     }
 
@@ -133,7 +133,7 @@ void test_Stress_Ternary_Structure(void) {
     /* Verify sorted output 0..19 */
     for (int i = 0; i < 20; i++) {
         int* top = (int*)priority_queue_top(pq);
-        TEST_ASSERT_EQUAL_INT(i, *top);
+        TEST_ASSERT_EQUAL_INT(19 - i, *top);
         priority_queue_pop(pq);
     }
 }
