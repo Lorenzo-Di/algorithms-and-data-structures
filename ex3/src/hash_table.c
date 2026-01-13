@@ -1,0 +1,250 @@
+#include "hash_table.h"
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+
+/* Internal node for chaining */
+typedef struct HashNode {
+    void *key;
+    void *value;
+    struct HashNode *next;
+} HashNode;
+
+/* Hash table structure */
+struct HashTable {
+    HashNode **buckets;
+    size_t capacity;
+    size_t size;
+    int (*compare)(const void*, const void*);
+    unsigned long (*hash)(const void*);
+};
+
+/* Default initial capacity (must be >0) */
+static const size_t INITIAL_CAPACITY = 1024;
+
+static int hash_table_resize(HashTable *table);
+
+HashTable* hash_table_create(int (*f1)(const void*, const void*), unsigned long (*f2)(const void*)) {
+    if (!f1 || !f2) {
+        return NULL;
+    }
+
+    HashTable *table = malloc(sizeof(HashTable));
+    if (!table) {
+        return NULL;
+    }
+
+    table->capacity = INITIAL_CAPACITY;
+    table->size = 0;
+    table->compare = f1;
+    table->hash = f2;
+
+    table->buckets = calloc(table->capacity, sizeof(HashNode*));
+    if (!table->buckets) {
+        free(table);
+        return NULL;
+    }
+
+    return table;
+}
+
+void hash_table_put(HashTable* table, const void* key, const void* value) {
+    if (!table || !key) {
+        return;
+    }
+
+    unsigned long h = table->hash(key);
+    size_t index = h % table->capacity;
+
+    HashNode *node = table->buckets[index];
+
+    /* Check if key already exists: overwrite */
+    while (node) {
+        if (table->compare(node->key, key) == 0) {
+            node->value = (void*)value;
+            return;
+        }
+        node = node->next;
+    }
+
+    /* Insert new node at head of chain */
+    HashNode *new_node = malloc(sizeof(HashNode));
+    if (!new_node) {
+        return; /* Allocation failure: leave table unchanged */
+    }
+
+    new_node->key = (void*)key;
+    new_node->value = (void*)value;
+    new_node->next = table->buckets[index];
+    table->buckets[index] = new_node;
+
+    table->size++;
+
+    double load = (double)table->size / (double)table->capacity;
+    if (load > 0.75) {
+        hash_table_resize(table);
+    }
+}
+
+static int hash_table_resize(HashTable *table) {
+    size_t new_capacity = table->capacity * 2;
+    HashNode **new_buckets = calloc(new_capacity, sizeof(HashNode*));
+    if (!new_buckets) {
+        return 0;
+    }
+
+    for (size_t i = 0; i < table->capacity; i++) {
+        HashNode *node = table->buckets[i];
+        while (node) {
+            HashNode *next = node->next;
+            unsigned long h = table->hash(node->key);
+            size_t new_index = h % new_capacity;
+            node->next = new_buckets[new_index];
+            new_buckets[new_index] = node;
+            node = next;
+        }
+    }
+
+    free(table->buckets);
+    table->buckets = new_buckets;
+    table->capacity = new_capacity;
+    return 1;
+}
+
+void* hash_table_get(const HashTable* table, const void* key) {
+    if (table == NULL || key == NULL) {
+        return NULL;
+    }
+
+    unsigned long hash = table->hash(key);
+    size_t index = hash % table->capacity;
+
+    HashNode* node = table->buckets[index];
+
+    while (node != NULL) {
+        if (table->compare(node->key, key) == 0) {
+            return node->value;
+        }
+        node = node->next;
+    }
+
+    return NULL;
+}
+
+int hash_table_contains_key(const HashTable *table, const void *key)
+{
+    if (!table || !key) {
+        return 0;
+    }
+
+    unsigned long hash = table->hash(key);
+    size_t index = hash % table->capacity;
+    HashNode *node = table->buckets[index];
+
+    while (node) {
+        if (table->compare(node->key, key) == 0) {
+            return 1;
+        }
+        node = node->next;
+    }
+
+    return 0;
+}
+
+void hash_table_remove(HashTable *table, const void *key)
+{
+    if (!table || !key) {
+        return;
+    }
+
+    unsigned long h = table->hash(key);
+    size_t index = h % table->capacity;
+
+    HashNode *node = table->buckets[index];
+    HashNode *prev = NULL;
+
+    while (node) {
+        if (table->compare(node->key, key) == 0) {
+            /* unlink */
+            if (prev) {
+                prev->next = node->next;
+            } else {
+                table->buckets[index] = node->next;
+            }
+
+            /* free node */
+            free(node);
+
+            table->size--;
+            return;
+        }
+
+        prev = node;
+        node = node->next;
+    }
+}
+
+int hash_table_size(const HashTable *table)
+{
+    if (!table) {
+        return -1;
+    }
+
+    if (table->size > INT_MAX) {
+        return -1;
+    }
+
+    return (int)table->size;
+}
+
+size_t hash_table_size_size_t(const HashTable *table) {
+    if(!table) { return 0; }
+    return table->size;
+}
+
+void** hash_table_keyset(const HashTable *table)
+{
+    if (!table) {
+        return NULL;
+    }
+
+    void **keys = malloc(table->size * sizeof(void*));
+    if (!keys) {
+        return NULL;
+    }
+
+    if(table->size == 0){
+        return keys;
+    }
+
+    size_t pos = 0;
+
+    for (size_t i = 0; i < table->capacity; i++) {
+        HashNode *node = table->buckets[i];
+        while (node) {
+            keys[pos++] = node->key;
+            node = node->next;
+        }
+    }
+
+    return keys;
+}
+
+void hash_table_free(HashTable *table)
+{
+    if (!table) {
+        return;
+    }
+
+    for (size_t i = 0; i < table->capacity; i++) {
+        HashNode *node = table->buckets[i];
+        while (node) {
+            HashNode *next = node->next;
+            free(node);
+            node = next;
+        }
+    }
+
+    free(table->buckets);
+    free(table);
+}

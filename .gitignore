@@ -3,3 +3,5 @@ build/
 doc/
 .vscode/
 *.bin
+*.txt
+*.csv

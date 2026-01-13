@@ -172,7 +172,7 @@ int priority_queue_remove(PriorityQueue *pq, const void *element) {
 
 int priority_queue_size(const PriorityQueue *pq) {
     if(!(pq && pq->size <= INT_MAX)) { return -1; }
-    return pq->size;
+    return (int)pq->size;
 }
 
 size_t priority_queue_size_size_t(const PriorityQueue *pq) {

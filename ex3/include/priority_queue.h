@@ -1,6 +1,8 @@
 #ifndef PRIORITY_QUEUE_H
 #define PRIORITY_QUEUE_H
 
+#include <stddef.h>
+
 /**
  * @file priority_queue.h
  * @brief Generic priority queue API.
