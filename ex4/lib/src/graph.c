@@ -36,12 +36,70 @@ Graph graph_create(int labelled,
     return gr;
 }
 
-int graph_is_directed(const Graph gr){
+int graph_is_directed(const Graph gr ) {
     if(!gr) { return -1; }
     return gr->is_directed;
 }
 
-int graph_is_labelled(const Graph gr){
+int graph_is_labelled(const Graph gr) {
     if(!gr) { return -1; }
     return gr->is_labelled;
+}
+
+int graph_add_node(Graph gr, const void* node) {
+    if(!(gr && node)) { return -1; }
+    if(hash_table_contains_key(gr->nodes, node)) { return 0; }
+
+    HashTable *adj = hash_table_create(gr->compare, gr->hash);
+    if(!adj) { return -1; }
+    hash_table_put(gr->nodes, node, adj);
+    return 1;
+}
+
+int graph_contains_node(const Graph gr, const void* node) {
+    if(!(gr && node)) { return -1; }
+    return hash_table_contains_key(gr->nodes, node);
+}
+
+int graph_remove_node(Graph gr, const void* node) {
+    int is_valid = graph_contains_node(gr, node);
+    if(is_valid != 1) { return is_valid; }
+    
+    if(!gr->is_directed) {
+        void **adjs = graph_get_neighbours(gr, node);
+        if(!adjs) { return -1; }
+        int nof_adjs = graph_num_neighbours(gr, node);
+
+        for(int i = 0; i < nof_adjs; i++) {
+            if(graph_remove_edge(gr, node, adjs[i]) == -1) {
+                free(adjs);
+                return -1;
+            }
+        }
+        free(adjs);
+    }
+
+    else { //gr->is_directed
+        void **keys = graph_get_nodes;
+        if(!keys) { return -1; }
+
+        int nof_nodes = graph_num_nodes(gr);
+        for(int i=0; i < nof_nodes; i++) {
+            if(graph_contains_edge(gr, keys[i], node) == 1) {
+                graph_remove_edge(gr, keys[i], node);
+            }
+        }
+        free(keys);
+    }
+
+    HashTable *node_table = hash_table_get(gr->nodes, node);
+    if(!node_table) { return -1; }
+
+    hash_table_free(node_table);
+    hash_table_remove(gr->nodes, node);
+    return 1;
+}
+
+int graph_num_nodes(const Graph gr) {
+    return hash_table_size(gr->nodes);
 }

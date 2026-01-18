@@ -68,7 +68,7 @@ int graph_is_labelled(const Graph gr);
  * 
  * @param gr The graph.
  * @param node The node to add.
- * @return 1 on success, 0 on failure, -1 on failure.
+ * @return 1 on success, 0 if the node is already present, -1 on failure.
  */
 int graph_add_node(Graph gr, const void* node);
 
@@ -185,7 +185,7 @@ void* graph_get_label(const Graph gr, const void* node1, const void* node2);
  *
  * @param gr The graph.
  * @param node The source node.
- * @return A newly allocated array of node pointers. The array length equals the number of neighbours of the edge.
+ * @return A newly allocated array of node pointers. The array length equals the number of neighbours of the node.
  *         If the graph is empty, the function returns a valid malloc(0) pointer (which must still be freed).
  *         Returns NULL if a memory allocation error occurs.
  */
