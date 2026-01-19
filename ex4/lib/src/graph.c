@@ -66,21 +66,23 @@ int graph_remove_node(Graph gr, const void* node) {
     if(is_valid != 1) { return is_valid; }
     
     if(!gr->is_directed) {
-        void **adjs = graph_get_neighbours(gr, node);
-        if(!adjs) { return -1; }
         int nof_adjs = graph_num_neighbours(gr, node);
+        if(nof_adjs > 0) {
+            void **adjs = graph_get_neighbours(gr, node);
+            if(!adjs) { return -1; } 
 
-        for(int i = 0; i < nof_adjs; i++) {
-            if(graph_remove_edge(gr, node, adjs[i]) == -1) {
-                free(adjs);
-                return -1;
+            for(int i = 0; i < nof_adjs; i++) {
+                if(graph_remove_edge(gr, node, adjs[i]) == -1) {
+                    free(adjs);
+                    return -1;
+                }
             }
+            free(adjs);
         }
-        free(adjs);
     }
 
     else { //gr->is_directed
-        void **keys = graph_get_nodes;
+        void **keys = graph_get_nodes(gr);
         if(!keys) { return -1; }
 
         int nof_nodes = graph_num_nodes(gr);
