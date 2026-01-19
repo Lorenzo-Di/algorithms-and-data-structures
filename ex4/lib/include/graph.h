@@ -145,7 +145,7 @@ int graph_contains_edge(const Graph gr, const void* node1, const void* node2);
 int graph_remove_edge(Graph gr, const void* node1, const void* node2);
 
 /**
- * @brief Get the number of edegs currently stored.
+ * @brief Get the number of edges currently stored.
  * 
  * @param gr The graph.
  * @return -1 on failure or if the number of edges > INT_MAX, the number of edges otherwise.
@@ -155,9 +155,9 @@ int graph_num_edges(const Graph gr);
 /**
  * @brief Retrieve an array of all edges.
  *
- * Edges are not duplicated: the returned array contains the same pointers
- * stored internally. The user is responsible for freeing only the returned
- * array, not the edges.
+ * The returned array contains the pointers to newly allocated edge structs.
+ * The user is responsible for freeing both the returned array and the single
+ * edge structs.
  *
  * @param gr The graph.
  * @return A newly allocated array of edge pointers. The array length equals the current number of edges.
@@ -203,7 +203,7 @@ int graph_num_neighbours(const Graph gr, const void* node);
 /**
  * @brief Free the graph structure.
  *
- * This frees all supporting structures and edges but does **not** free the elements.
+ * This frees all supporting structures and edges but does **not** free the nodes.
  * The user must free them separately if needed.
  *
  * @param table The hash table.
