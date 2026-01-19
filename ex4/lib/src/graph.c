@@ -105,3 +105,38 @@ int graph_remove_node(Graph gr, const void* node) {
 int graph_num_nodes(const Graph gr) {
     return hash_table_size(gr->nodes);
 }
+
+void** graph_get_nodes(const Graph gr) {
+    return hash_table_keyset(gr->nodes);
+}
+
+int graph_add_edge(Graph gr, const void* node1, const void* node2, const void* label) {
+    if(!(gr && node1 && node2 && (!gr->is_labelled || label))) { return -1; }
+    if(graph_contains_edge(gr, node1, node2) == 1) { return 0; }
+    
+    HashTable *node1_table = hash_table_get(gr->nodes, node1);
+    if(!node1_table) { return -1; }
+
+    if(gr->is_labelled) { hash_table_put(node1_table, node2, label); }
+    else { hash_table_put(node1_table, node2, NULL); }
+
+    if(!gr->is_directed) {
+        HashTable *node2_table = hash_table_get(gr->nodes, node2);
+        if(!node2_table) { return -1; }
+
+        if(gr->is_labelled) { hash_table_put(node2_table, node1, label); }
+        else { hash_table_put(node2_table, node1, NULL); }
+    }
+
+    return 1;
+}
+
+int graph_contains_edge(const Graph gr, const void* node1, const void* node2) {
+    if(!(gr && node1 && node2)) { return -1; }
+
+    HashTable *node1_table = hash_table_get(gr->nodes, node1);
+    if(!node1_table) { return -1; }
+
+    if(hash_table_contains_key(node1_table, node2)) { return 1; }
+    return 0;
+}
