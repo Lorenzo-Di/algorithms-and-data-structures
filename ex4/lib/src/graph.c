@@ -38,27 +38,27 @@ Graph graph_create(int labelled,
 }
 
 int graph_is_directed(const Graph gr ) {
-    if(!gr) { return -1; }
+    if(!gr) { return 0; }
     return gr->is_directed;
 }
 
 int graph_is_labelled(const Graph gr) {
-    if(!gr) { return -1; }
+    if(!gr) { return 0; }
     return gr->is_labelled;
 }
 
 int graph_add_node(Graph gr, const void* node) {
-    if(!(gr && node)) { return -1; }
+    if(!(gr && node)) { return 0; }
     if(hash_table_contains_key(gr->nodes, node)) { return 0; }
 
     HashTable *adj = hash_table_create(gr->compare, gr->hash);
-    if(!adj) { return -1; }
+    if(!adj) { return 0; }
     hash_table_put(gr->nodes, node, adj);
     return 1;
 }
 
 int graph_contains_node(const Graph gr, const void* node) {
-    if(!(gr && node)) { return -1; }
+    if(!(gr && node)) { return 0; }
     return hash_table_contains_key(gr->nodes, node);
 }
 
@@ -112,18 +112,18 @@ void** graph_get_nodes(const Graph gr) {
 }
 
 int graph_add_edge(Graph gr, const void* node1, const void* node2, const void* label) {
-    if(!(gr && node1 && node2 && (!gr->is_labelled || label))) { return -1; }
+    if(!(gr && node1 && node2 && (!gr->is_labelled || label))) { return 0; }
     if(graph_contains_edge(gr, node1, node2) == 1) { return 0; }
     
     HashTable *node1_table = hash_table_get(gr->nodes, node1);
-    if(!node1_table) { return -1; }
+    if(!node1_table) { return 0; }
 
     if(gr->is_labelled) { hash_table_put(node1_table, node2, label); }
     else { hash_table_put(node1_table, node2, NULL); }
 
     if(!gr->is_directed) {
         HashTable *node2_table = hash_table_get(gr->nodes, node2);
-        if(!node2_table) { return -1; }
+        if(!node2_table) { return 0; }
 
         if(gr->is_labelled) { hash_table_put(node2_table, node1, label); }
         else { hash_table_put(node2_table, node1, NULL); }
@@ -133,10 +133,10 @@ int graph_add_edge(Graph gr, const void* node1, const void* node2, const void* l
 }
 
 int graph_contains_edge(const Graph gr, const void* node1, const void* node2) {
-    if(!(gr && node1 && node2)) { return -1; }
+    if(!(gr && node1 && node2)) { return 0; }
 
     HashTable *node1_table = hash_table_get(gr->nodes, node1);
-    if(!node1_table) { return -1; }
+    if(!node1_table) { return 0; }
 
     if(hash_table_contains_key(node1_table, node2)) { return 1; }
     return 0;
@@ -162,20 +162,20 @@ int graph_remove_edge(Graph gr, const void* node1, const void* node2) {
 
 int graph_num_edges(const Graph gr) {
     void **nodes = hash_table_keyset(gr->nodes);
-    if(!nodes) { return -1; }
+    if(!nodes) { return 0; }
     int nof_nodes = hash_table_size(gr->nodes);
 
     size_t total_nof_edges = 0;
     int sing_nof_edges = 0;
     for(int i = 0; i < nof_nodes; i++) {
-        if((sing_nof_edges = hash_table_size(hash_table_get(gr->nodes, nodes[i]))) == -1) { return -1; }
+        if((sing_nof_edges = hash_table_size(hash_table_get(gr->nodes, nodes[i]))) == -1) { return 0; }
         total_nof_edges += sing_nof_edges;
     }
     
     free(nodes);
 
     if(!gr->is_directed) { total_nof_edges /= 2; }
-    if(total_nof_edges > INT_MAX) { return -1; }
+    if(total_nof_edges > INT_MAX) { return 0; }
     return total_nof_edges;
 }
 
@@ -183,8 +183,7 @@ Edge** graph_get_edges(const Graph gr) {
     if(!gr) { return NULL; }
 
     int nof_edges = graph_num_edges(gr);
-    if(nof_edges == -1) { return NULL; }
-    if(nof_edges == 0) { return NULL; }
+    if(nof_edges <= 0) { return NULL; }
 
     Edge **edges = malloc(sizeof(Edge*) * nof_edges);
     if(!edges) { return NULL; }
@@ -247,6 +246,7 @@ void* graph_get_label(const Graph gr, const void* node1, const void* node2) {
     if(!(gr && node1 && node2 && gr->is_labelled)) { return NULL; }
 
     void *node_table = hash_table_get(gr->nodes, node1);
+    if(!node_table) { return NULL; }
     return hash_table_get(node_table, node2);
 }
 
@@ -259,10 +259,10 @@ void** graph_get_neighbours(const Graph gr, const void* node) {
 }
 
 int graph_num_neighbours(const Graph gr, const void* node) {
-    if(!(gr && node)) { return -1; }
+    if(!(gr && node)) { return 0; }
 
     void *node_table = hash_table_get(gr->nodes, node);
-    if(!node_table) { return -1; }
+    if(!node_table) { return 0; }
     return hash_table_size(node_table);
 }
 

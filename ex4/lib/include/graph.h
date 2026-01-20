@@ -51,7 +51,7 @@ Graph graph_create(int labelled,
  * @brief Check if a graph is directed.
  * 
  * @param gr The graph.
- * @return 1 if directed, 0 if undirected, -1 on failure.
+ * @return 1 if directed, 0 otherwise.
  */
 int graph_is_directed(const Graph gr);
 
@@ -59,7 +59,7 @@ int graph_is_directed(const Graph gr);
  * @brief Check if a graph is labelled.
  * 
  * @param gr The graph.
- * @return 1 if labelled, 0 if unlabelled, -1 on failure.
+ * @return 1 if labelled, 0 otherwise.
  */
 int graph_is_labelled(const Graph gr);
 
@@ -68,7 +68,7 @@ int graph_is_labelled(const Graph gr);
  * 
  * @param gr The graph.
  * @param node The node to add.
- * @return 1 on success, 0 if the node is already present, -1 on failure.
+ * @return 1 on success, 0 if the node is already present or failure.
  */
 int graph_add_node(Graph gr, const void* node);
 
@@ -77,7 +77,7 @@ int graph_add_node(Graph gr, const void* node);
  * 
  * @param gr The graph.
  * @param node The node to find.
- * @return 1 if the node is present, 0 if it's not present, -1 on failure.
+ * @return 1 if the node is present, 0 otherwise.
  */
 int graph_contains_node(const Graph gr, const void* node);
 
@@ -120,7 +120,7 @@ void** graph_get_nodes(const Graph gr);
  * @param node2 The destination node.
  * @param label The label of the edge. This is ignored if the graph is not labelled.
  * 
- * @return 1 on success, 0 if the edge was already present, -1 failure.
+ * @return 1 on success, 0 if the edge was already present or failure
  */
 int graph_add_edge(Graph gr, const void* node1, const void* node2, const void* label);
 
@@ -130,7 +130,7 @@ int graph_add_edge(Graph gr, const void* node1, const void* node2, const void* l
  * @param gr The graph.
  * @param node1 The source node.
  * @param node2 The destination node.
- * @return 1 if the edge is present, 0 if it is not, -1 on failure.
+ * @return 1 if the edge is present, 0 otherwise.
  */
 int graph_contains_edge(const Graph gr, const void* node1, const void* node2);
 
@@ -148,7 +148,7 @@ int graph_remove_edge(Graph gr, const void* node1, const void* node2);
  * @brief Get the number of edges currently stored.
  * 
  * @param gr The graph.
- * @return -1 on failure or if the number of edges > INT_MAX, the number of edges otherwise.
+ * @return The number of edges of the node, 0 on failure.
  */
 int graph_num_edges(const Graph gr);
 
@@ -196,7 +196,7 @@ void** graph_get_neighbours(const Graph gr, const void* node);
  * 
  * @param gr The graph.
  * @param node The source node.
- * @return The number of neighbours of the node, -1 if the number of neighbours > INT_MAX or failure.
+ * @return The number of neighbours of the node, 0 on failure.
  */
 int graph_num_neighbours(const Graph gr, const void* node);
 
