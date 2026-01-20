@@ -13,7 +13,8 @@ void** breadth_first_visit(Graph gr,
     if(!graph_contains_node(gr, start)) { return NULL; }
 
     int num_nodes = graph_num_nodes(gr);
-    void **result = malloc((num_nodes + 1) * sizeof(void*)); //keep a space for terminating NULL to indicate end of array
+    if(num_nodes < 0) { return NULL; }
+    void **result = malloc((unsigned int)(num_nodes + 1) * sizeof(void*)); //keep a space for terminating NULL to indicate end of array
     if(!result) { return NULL; }
 
     Queue to_visit = queue_create();
@@ -29,7 +30,7 @@ void** breadth_first_visit(Graph gr,
     hash_table_put(visited, start, NULL);
     queue_enqueue(to_visit, start);
 
-    int count = 0;
+    unsigned int count = 0;
 
     while(!queue_is_empty(to_visit)) {
         void *current;
