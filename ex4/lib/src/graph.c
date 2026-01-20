@@ -1,6 +1,7 @@
 #include "graph.h"
 #include "hash_table.h"
 #include <stdlib.h>
+#include <limits.h>
 
 struct graph
 {
@@ -139,4 +140,41 @@ int graph_contains_edge(const Graph gr, const void* node1, const void* node2) {
 
     if(hash_table_contains_key(node1_table, node2)) { return 1; }
     return 0;
+}
+
+int graph_remove_edge(Graph gr, const void* node1, const void* node2) {
+    if(!(gr && node1 && node2)) { return -1; }
+    if(graph_contains_edge(gr, node1, node2) == 0) { return 0; }
+
+    HashTable *node1_table = hash_table_get(gr->nodes, node1);
+    if(!node1_table) { return -1; }
+
+    hash_table_remove(node1_table, node2);
+
+    if(!gr->is_directed) {
+        HashTable *node2_table = hash_table_get(gr->nodes, node2);
+        if(!node2_table) { return -1; }
+
+        hash_table_remove(node2_table, node1);
+    }
+    return 1;
+}
+
+int graph_num_edges(const Graph gr) {
+    void **nodes = hash_table_keyset(gr->nodes);
+    if(!nodes) { return -1; }
+    int nof_nodes = hash_table_size(gr->nodes);
+
+    size_t total_nof_edges = 0;
+    int sing_nof_edges = 0;
+    for(int i = 0; i < nof_nodes; i++) {
+        if((sing_nof_edges = hash_table_size(hash_table_get(gr->nodes, nodes[i]))) == -1) { return -1; }
+        total_nof_edges += sing_nof_edges;
+    }
+    
+    free(nodes);
+
+    if(!gr->is_directed) { total_nof_edges /= 2; }
+    if(total_nof_edges > INT_MAX) { return -1; }
+    return total_nof_edges;
 }
