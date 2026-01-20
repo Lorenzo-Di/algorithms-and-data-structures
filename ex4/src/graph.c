@@ -161,6 +161,7 @@ int graph_remove_edge(Graph gr, const void* node1, const void* node2) {
 }
 
 int graph_num_edges(const Graph gr) {
+    if(!gr) { return 0; }
     void **nodes = hash_table_keyset(gr->nodes);
     if(!nodes) { return 0; }
     int nof_nodes = hash_table_size(gr->nodes);
@@ -270,15 +271,16 @@ void graph_free(Graph gr) {
     if(!gr) { return; }
     
     void **nodes = hash_table_keyset(gr->nodes);
-    if(!nodes) { return; }
+    if(!nodes) { goto cleanup; }
     int nof_nodes = hash_table_size(gr->nodes);
     
     for(int i = 0; i < nof_nodes; i++) {
         HashTable *adj = hash_table_get(gr->nodes, nodes[i]);
-        hash_table_free(adj);
+        if(adj) { hash_table_free(adj); }
     }
     free(nodes);
 
+cleanup:
     hash_table_free(gr->nodes);
 
     free(gr);
