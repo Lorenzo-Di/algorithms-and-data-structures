@@ -14,17 +14,17 @@
 
 ## Hybrid approach advantages
 
-The results are as theorically expected: both with k=10 and k=50 the hybrid approach is faster than pure quicksort.
-An optimal value of k is certainly between 0 and 50, but by tring even more values of k many times it can be seen that the sweet spot is about k=15 for this particular algorithm.
+The results are as theorically expected: both with $k=10$ and $k=10$ the hybrid approach is faster than pure quicksort ($k=0$).
+An optimal value of k is certainly between 0 and 50, but by tring even more values of k many times it can be seen that the sweet spot is about $k=15$ for this particular algorithm.
 The value k could be even higher if another low overhead algorithm with better performance than selection sort was used, like insertion sort.
-Even though selection sort has O(n^2) complexity we still have a gain in performance over quicksort's O(n log n) complexity for small values of n because of the simpler implementation: selection sort has a way smaller constant factor c.
+Even though selection sort has $O(n^2)$ complexity we still have a gain in performance over quicksort's $O(n \log n)$ complexity for small values of n because of the simpler implementation: selection sort has a way **smaller constant factor $c$**.
 Thanks to this hybrid approach we're also limiting recursion, and so maximum stack depth and memory usage.
 
 ## Differences Between Field Types
 
 Performance differnces can be seen depending on the data type:
 * **Field 1 (float, 4 bytes)** is the fastest to sort because of **spatial locality**: 4-byte values fit twice as densely into CPU cache lines compared to 8-byte integers  like *id* and *field2*, resulting in fewer cache misses.
-* **Field 3 (string, 16 bytes)** with low values of *k*, so when using quicksort, it's faster than *id* and *field2* probably thanks to this specific data's structure and the use of 3-way partitioning, likely there are more equal values compared to the other fields, making it already partially ordered, and probably strcmp can recognize the bigger of the strings in the first few bytes. However, when *k* increases it starts becoming slower because it can no longer take advantage of the equal values with selection sort.
+* **Field 3 (string, 16 bytes)** with low values of *k*, so when using quicksort, it's faster than *id* and *field2* probably thanks to this specific data's structure and the use of **3-way partitioning**, likely there are more equal values compared to the other fields, making it already partially ordered, and probably strcmp can recognize the bigger of the strings in the first few bytes. However, when *k* increases it starts becoming slower because it can no longer take advantage of the equal values with selection sort.
 * **Id and Field 2(uint and int, 8 bytes)** are very similar since they have the same size and the cpu instruction to compare them is the same.
 
 ### Possible improvements
