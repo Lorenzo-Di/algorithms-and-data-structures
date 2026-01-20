@@ -180,7 +180,7 @@ size_t priority_queue_size_size_t(const PriorityQueue *pq) {
     return pq->size;
 }
 
-void priority_queue_free(PriorityQueue *pq){
+void priority_queue_free(PriorityQueue *pq) {
     if(!pq) { return; }
 
     size_t table_size = hash_table_size_size_t(pq->table);

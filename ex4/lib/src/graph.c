@@ -169,14 +169,14 @@ int graph_num_edges(const Graph gr) {
     int sing_nof_edges = 0;
     for(int i = 0; i < nof_nodes; i++) {
         if((sing_nof_edges = hash_table_size(hash_table_get(gr->nodes, nodes[i]))) == -1) { return 0; }
-        total_nof_edges += sing_nof_edges;
+        total_nof_edges += (unsigned int)sing_nof_edges;
     }
     
     free(nodes);
 
     if(!gr->is_directed) { total_nof_edges /= 2; }
     if(total_nof_edges > INT_MAX) { return 0; }
-    return total_nof_edges;
+    return (int)total_nof_edges;
 }
 
 Edge** graph_get_edges(const Graph gr) {
@@ -185,7 +185,7 @@ Edge** graph_get_edges(const Graph gr) {
     int nof_edges = graph_num_edges(gr);
     if(nof_edges <= 0) { return NULL; }
 
-    Edge **edges = malloc(sizeof(Edge*) * nof_edges);
+    Edge **edges = malloc(sizeof(Edge*) * (unsigned int)nof_edges);
     if(!edges) { return NULL; }
 
     for(int i = 0; i < nof_edges; i++) {
