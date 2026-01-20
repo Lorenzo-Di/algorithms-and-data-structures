@@ -19,8 +19,7 @@ struct HashTable {
     unsigned long (*hash)(const void*);
 };
 
-/* Default initial capacity (must be >0) */
-static const size_t INITIAL_CAPACITY = 1024;
+static const size_t INITIAL_CAPACITY = 32;
 
 static int hash_table_resize(HashTable *table);
 
@@ -172,7 +171,6 @@ void hash_table_remove(HashTable *table, const void *key)
                 table->buckets[index] = node->next;
             }
 
-            /* free node */
             free(node);
 
             table->size--;
