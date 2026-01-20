@@ -178,3 +178,67 @@ int graph_num_edges(const Graph gr) {
     if(total_nof_edges > INT_MAX) { return -1; }
     return total_nof_edges;
 }
+
+Edge** graph_get_edges(const Graph gr) {
+    if(!gr) { return NULL; }
+
+    int nof_edges = graph_num_edges(gr);
+    if(nof_edges == -1) { return NULL; }
+    if(nof_edges == 0) { return NULL; }
+
+    Edge **edges = malloc(sizeof(Edge*) * nof_edges);
+    if(!edges) { return NULL; }
+
+    for(int i = 0; i < nof_edges; i++) {
+        edges[i] = malloc(sizeof(Edge));
+        if(!edges[i]) {
+            for(int j = 0; j < i; j++) { //this many mallocs could be avoided by just returning Edge* instead of Edge** and allocating all the memory needed for the array together
+                free(edges[j]);
+            }
+            free(edges);
+            return NULL;
+        }
+    }
+    
+    void **nodes = hash_table_keyset(gr->nodes);
+    if(!nodes) { 
+        for(int i = 0; i < nof_edges; i++) {
+            free(edges[i]);
+        }
+        free(edges);
+        return NULL; 
+    }
+
+    int nof_nodes = graph_num_nodes(gr);
+    int edge_idx = 0;
+
+    for(int i = 0; i < nof_nodes; i++) {
+        void *curr_node = nodes[i];
+        HashTable *adj = hash_table_get(gr->nodes, curr_node);
+        
+        int n_neighbors = hash_table_size(adj);
+        if(n_neighbors <= 0) continue;
+
+        void **node_edges = hash_table_keyset(adj);
+        if(!node_edges) continue;
+
+        for(int k = 0; k < n_neighbors; k++) {
+            void *neighbor = node_edges[k];
+
+            if(!gr->is_directed) {
+                if(gr->compare(curr_node, neighbor) >= 0) { continue; }
+            }
+
+            if(edge_idx >= nof_edges) { continue; }
+
+            edges[edge_idx]->source = curr_node;
+            edges[edge_idx]->dest = neighbor;
+            edges[edge_idx]->label = graph_get_label(gr, curr_node, neighbor);
+            edge_idx++;
+        }
+        free(node_edges);
+    }
+
+    free(nodes);
+    return edges;
+}
