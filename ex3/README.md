@@ -1,3 +1,5 @@
+# Ternary Heap Library, Priority Queue and cpu task scheduler
+
 ## Complexity and Performance
 
 The **Ternary Heap** maintains the same time complexity as a standard Binary Heap for basic operations $O(\log N)$, but with specific advantages due to some implementation choices.
