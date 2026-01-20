@@ -242,3 +242,44 @@ Edge** graph_get_edges(const Graph gr) {
     free(nodes);
     return edges;
 }
+
+void* graph_get_label(const Graph gr, const void* node1, const void* node2) {
+    if(!(gr && node1 && node2 && gr->is_labelled)) { return NULL; }
+
+    void *node_table = hash_table_get(gr->nodes, node1);
+    return hash_table_get(node_table, node2);
+}
+
+void** graph_get_neighbours(const Graph gr, const void* node) {
+    if(!(gr && node)) { return NULL; }
+
+    void *node_table = hash_table_get(gr->nodes, node);
+    if(!node_table) { return NULL; }
+    return hash_table_keyset(node_table);
+}
+
+int graph_num_neighbours(const Graph gr, const void* node) {
+    if(!(gr && node)) { return -1; }
+
+    void *node_table = hash_table_get(gr->nodes, node);
+    if(!node_table) { return -1; }
+    return hash_table_size(node_table);
+}
+
+void graph_free(Graph gr) {
+    if(!gr) { return; }
+    
+    void **nodes = hash_table_keyset(gr->nodes);
+    if(!nodes) { return; }
+    int nof_nodes = hash_table_size(gr->nodes);
+    
+    for(int i = 0; i < nof_nodes; i++) {
+        HashTable *adj = hash_table_get(gr->nodes, nodes[i]);
+        hash_table_free(adj);
+    }
+    free(nodes);
+
+    hash_table_free(gr->nodes);
+
+    free(gr);
+}
