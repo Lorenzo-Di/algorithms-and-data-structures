@@ -33,9 +33,9 @@ typedef struct edge {
  * 
  * @param labelled Should be 1 if the graph needs to be labelled.
  * @param directed Should be 1 if the graph needs to be directed.
- * @param compar Comparison function used to determine equality between elements.
- * The function returns 0 when the two keys are equal, and non‑zero
- * otherwise.
+ * @param compar Comparison function used to determine order and equality between elements.
+ * The function returns an integer less than, equal to, or greater than zero if the first
+ * argument is considered to be respectively less than, equal to, or greater than the second.
  * @param hash_func Hash function for hash table used as support to esnure less than linear complexity.
  * It must return a 64‑bit hash value and must be consistent: equal keys must produce
  * identical hashes.
