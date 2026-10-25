@@ -1,5 +1,7 @@
 # High-Performance Generic Data Structures & Algorithms in C
 
+[![C Build & Valgrind CI](https://github.com/lorenzo-di/algorithms-and-data-structures/actions/workflows/ci.yml/badge.svg)](https://github.com/lorenzo-di/algorithms-and-data-structures/actions/workflows/ci.yml)
+
 A collection of generic, memory-safe data structures and algorithms implemented from scratch in standard C. Designed to handle large-scale datasets (up to **20 million binary records** and **1 million scheduled tasks**), focusing on asymptotic complexity, CPU cache locality, and strict memory management.
 
 ## Key Engineering Highlights

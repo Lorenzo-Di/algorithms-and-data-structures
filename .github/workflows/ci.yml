@@ -1,0 +1,22 @@
+name: C Build & Valgrind CI
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Valgrind
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+
+      - name: Compile and Run Unit Tests
+        run: make test
+
+      - name: Memory Leak Check (Valgrind)
+        run: |
+          valgrind --leak-check=full --error-exitcode=1 ./ex1/bin/test_ex1
+          valgrind --leak-check=full --error-exitcode=1 ./ex2/bin/test_ex2
+          valgrind --leak-check=full --error-exitcode=1 ./ex3/bin/test_ex3
+          valgrind --leak-check=full --error-exitcode=1 ./ex4/bin/test_ex4

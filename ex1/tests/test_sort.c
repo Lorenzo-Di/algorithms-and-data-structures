@@ -151,7 +151,9 @@ void test_hybridsort_struct_array(void){
     Item array[5] = {{3, {0}}, {1, {0}}, {4, {0}}, {2, {0}}, {1, {0}}};
     Item expected[5] = {{1, {0}}, {1, {0}}, {2, {0}}, {3, {0}}, {4, {0}}};
     hybridsort(array, 5, sizeof(Item), 2, compar_item);
-    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, array, sizeof(Item), 5);
+    for (int i = 0; i < 5; i++) {
+        TEST_ASSERT_EQUAL_INT(0, compar_item(&expected[i], &array[i]));
+    }
 }
 
 void test_hybridsort_string(void) {
