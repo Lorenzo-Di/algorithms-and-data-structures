@@ -1,23 +1,20 @@
-# Ternary Heap Library, Priority Queue and cpu task scheduler
+# Ternary Heap Priority Queue & CPU Task Scheduler
 
-## Complexity and Performance
+## Architecture & Complexity
+This module implements a generic **Priority Queue** backed by a dynamic **Ternary Heap** ($d=3$), where each parent node dominates up to three children. 
 
-The **Ternary Heap** maintains the same time complexity as a standard Binary Heap for basic operations $O(\log N)$, but with specific advantages due to some implementation choices.
+### 1. Ternary vs. Binary Heap Trade-offs
+A 3-ary heap reduces tree height to $\lfloor \log_3 N \rfloor$, resulting in shallower upward percolation (`push`) at the cost of at most one additional comparison per level during downward percolation (`pop`). Contiguous array storage ensures strong CPU cache locality.
 
-### 2. Hash Table Optimization
-The standard implementation of `contains` and `remove` on a heap would strictly be $O(N)$ due to linear scanning.
-By utilizing an **Auxiliary Hash Table** that maps `element_pointer -> heap_index`, we achieve:
-* **Contains:** $O(1)$ amortized complexity.
-* **Remove:** $O(\log N)$ total complexity ($O(1)$ to find the index + $O(\log N)$ to restore the heap property).
+### 2. $O(1)$ Lookup & $O(\log_3 N)$ Arbitrary Removal via Auxiliary Hash Table
+In a standard heap, `contains` and `remove` require an $O(N)$ linear scan. By coupling the heap array with our generic **Hash Table** (from Module 2) mapping `element_pointer -> heap_index`, every index swap during heapify operations is synchronized in $O(1)$ amortized time:
+* **`priority_queue_contains`:** **$O(1)$** amortized time complexity.
+* **`priority_queue_remove`:** **$O(\log_3 N)$** total time complexity ($O(1)$ index lookup + $O(\log_3 N)$ sift-up/sift-down restoration).
 
-This makes the structure significantly faster for scenarios involving frequent updates or checks on specific tasks, which is critical for the scheduler simulation, at the cost of more complex code logic, requiring to update the hash table everytime the heap updates.
+## Non-Preemptive CPU Scheduler Simulation
+The priority queue powers a discrete-event simulation of a single-core, non-preemptive priority task scheduler (`main_ex3`):
+* **High Throughput:** Processes **1,000,000 tasks** in **under 1 second**, empirically validating the $O(N \log_3 N)$ overall scheduling complexity.
+* **Execution Model:** Accurately handles CPU idle jumps ($t \to \text{next arrival}$) and priority arbitration among all arrived tasks ($\text{Start} \le t$).
 
-## Task Scheduler Simulation
-
-The simulation on `tasks.csv` finishes in under 1 second with 1 million records, confirming the correctness of the $O(N \log N)$ total sorting logic.
-* **Non-preemptive Logic:** Validated that tasks run to completion once started.
-* **Idle Management:** The scheduler correctly handles time gaps when no tasks are available.
-* **Priority:** Verified that among available tasks, the one with the highest priority is always chosen.
-
-### Possible improvement
-**Memory Pre-allocation:** Currently, `realloc` is used when capacity is reached. Since we know the line count of the CSV beforehand, we could allocate the exact memory needed for the internal array `void **heap` immediately to avoid resizing overhead.
+### Future Optimization
+* **Capacity Pre-allocation:** Adding a `priority_queue_reserve(size_t capacity)` API to pre-allocate the internal `void **heap` buffer when input size is known ahead of time, eliminating dynamic `realloc` overhead.

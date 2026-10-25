@@ -49,6 +49,6 @@ $(OBJ_UNITY): $(UNITY_DIR)/unity.c
 	$(CC) -c $(COMMON_FLAGS) $(INCLUDES) $< -o $@
 
 clean:
-	rm -rf $(BIN_DIR) $(BUILD_DIR)
+	@rm -rf $(BIN_DIR) $(BUILD_DIR)
 
 .PHONY: all clean directories

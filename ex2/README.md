@@ -1,29 +1,21 @@
-# Experience coding with LLM
+# Generic Chained Hash Table & Lexical Analyzer
 
-The development was purposely made iteratively, since the AI likes to rush things and be imprecise when giving long or difficult prompts.
+## Architecture & Complexity
+This module provides a type-generic **Hash Table with Separate Chaining** (`HashTable`), supporting arbitrary key and value types via `void*` pointers, custom hash functions, and key comparators.
 
-The initial prompt was the whole assignment text, but it was also clearly stating to not do anything and wait for more instructions on how to proceed. Therefore the AI was instructed to generate well structured code, with doxygen documentation, short functions, following all C standards, compiled with the most restrictive flags without any errors, meaningful variable and function names, unit testing with unity, Makefile and files divided in the correct directories, and frequent, meaningful commits.
-The output showed the AI's understanding of the constraints.
+* **Dynamic Resizing:** Automatically expands bucket capacity when the load factor $\alpha = N / M$ exceeds the threshold, preserving **$O(1)$ amortized time complexity** for `put`, `get`, `contains_key`, and `remove`.
+* **Ownership Semantics:** The container manages internal node allocations and bucket arrays while leaving key/value lifecycle management to the caller, preventing double-free vulnerabilities in generic contexts.
+* **Application Benchmark:** Used in `main_ex2` to parse Homer's *Iliad* and compute the highest-frequency words matching a minimum length constraint in linear time with respect to text size.
 
-The first real task was to create the API, which it did successfully without any mistakes, followed by the actual functions one by one.
+---
 
-The first problems came up with the put function for which I needed to tell it to check if the table should be resized, and to make a helper function for it.
+## Methodology Case Study: Auditing LLM-Generated C Code
+As part of an experimental software engineering requirement, initial scaffolding for this module was generated iteratively using a Large Language Model (LLM) under strict architectural constraints (Doxygen documentation, modular functions $< 30$ lines, strict compiler flags `-Wall -Wextra -Werror`, and Unity unit testing).
 
-Next it started being inconsistent, adding documentation that was already present in the header to the source file, while also using wrong function names.
+### Critical Engineering Interventions & Refactoring
+Direct evaluation of the LLM output revealed several classic pitfalls in automated C code generation that required manual architectural correction:
 
-It then changed int hash_table_contains_key to bool hash_table_contains_key, again an inconsistency with the header file.
-In hash_table_remove it forgot to use generic void* pointers and a user given compare function and started using char pointers and strcmp, while also returning 0 instead of -1 on failure.
-
-At the end in the free function it tried to free the key and the values, going against what it wrote in the header file once again and also going against the proposed implementation of put.
-
-Two last small issues were inconsistencies in using const, also trying to modify const values and adding comments in Italian instead of English as instructed.
-
-## Main Issues encountered
-
-Summarizing, the AI is really fast at writing down code but it's not always perfect, the main problems were:
-
- **Respecting function signatures**
-
- **Memory management**
-
- **Consistency** especially across different files, and sometimes across different functions of the same one.
+1. **Asymptotic Complexity Enforcement (Dynamic Resizing):** The initial generated implementation omitted load-factor monitoring in `hash_table_put`, which would have degraded lookups from $O(1)$ to $O(N)$ on large datasets. A dedicated rehashing helper was engineered to maintain constant amortized complexity.
+2. **Polymorphism & Type Erasure Violations:** During the implementation of `hash_table_remove`, the model regressed from generic `void*` pointers and user-supplied comparator callbacks to hardcoded `char*` casts and `strcmp` calls. This was refactored to strictly enforce type erasure.
+3. **Memory Ownership & Safety:** In `hash_table_free`, the generated draft attempted to call `free()` directly on user-provided `const void*` keys and values, violating both the API contract and `const`-correctness (and risking segmentation faults on stack-allocated keys).
+4. **API Contract Consistency:** Resolved signature drifts between header declarations and source definitions (e.g., return type mismatches between `int` and `bool` in `hash_table_contains_key` and error sentinel values).

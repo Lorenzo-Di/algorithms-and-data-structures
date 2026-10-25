@@ -25,6 +25,6 @@ folders:
 	mkdir -p build/ bin/
 
 clean:
-	rm -rf build/ bin/
+	@rm -rf build/ bin/
 
 rebuild: clean all

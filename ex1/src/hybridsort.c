@@ -18,10 +18,10 @@ static void partition(void* base,
                 int (*compar)(const void *, const void *),
                 size_t *low,
                 size_t *high){
-    
+                    
     char* b = (char*)base;
     char pivot[size];
-    void *C = (char*)b + (p + rand() % (r - p + 1)) * size;
+    void *C = (char*)b + (p + (size_t)rand() % (r - p + 1)) * size;
     memcpy(pivot, C, size);
 
     // [p..l-1] < pivot, [l..i-1] == pivot, [h+1..r] > pivot
